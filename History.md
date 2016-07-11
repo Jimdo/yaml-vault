@@ -1,3 +1,7 @@
+# 0.2.4 / 2016-07-11
+
+  * fix read tries when path has no current children
+
 # 0.2.3 / 2016-07-11
 
   * add version number in GoBuilder builds

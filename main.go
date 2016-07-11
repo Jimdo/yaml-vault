@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"html/template"
 	"io/ioutil"
 	"log"
 	"os"
@@ -172,6 +174,11 @@ func importToVault(client *api.Client) error {
 		return err
 	}
 
+	keysRaw, err = parseImportFile(keysRaw)
+	if err != nil {
+		return err
+	}
+
 	var keys importFile
 	if err := yaml.Unmarshal(keysRaw, &keys); err != nil {
 		return err
@@ -185,4 +192,27 @@ func importToVault(client *api.Client) error {
 	}
 
 	return nil
+}
+
+func parseImportFile(in []byte) (out []byte, err error) {
+	funcMap := template.FuncMap{
+		"env": func(name string, v ...string) string {
+			defaultValue := ""
+			if len(v) > 0 {
+				defaultValue = v[0]
+			}
+			if value, ok := os.LookupEnv(name); ok {
+				return value
+			}
+			return defaultValue
+		},
+	}
+
+	t, err := template.New("input file").Funcs(funcMap).Parse(string(in))
+	if err != nil {
+		return nil, err
+	}
+
+	buf := bytes.NewBuffer([]byte{})
+	return buf.Bytes(), t.Execute(buf, nil)
 }

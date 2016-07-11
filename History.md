@@ -1,3 +1,7 @@
+# 0.2.3 / 2016-07-11
+
+  * add version number in GoBuilder builds
+
 # 0.2.2 / 2016-07-11
 
   * fix replacing config with empty file

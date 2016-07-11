@@ -139,33 +139,34 @@ func exportFromVault(client *api.Client) error {
 }
 
 func readRecurse(client *api.Client, path string, out *importFile) error {
-	if strings.HasSuffix(path, "/") {
-		secret, err := client.Logical().List(path)
+	if !strings.HasSuffix(path, "/") {
+		secret, err := client.Logical().Read(path)
 		if err != nil {
-			return fmt.Errorf("Error reading %s: %s", path, err)
+			return err
 		}
 
-		if secret != nil && secret.Data["keys"] != nil {
-			for _, k := range secret.Data["keys"].([]interface{}) {
-				if err := readRecurse(client, path+k.(string), out); err != nil {
-					return err
-				}
-			}
-			return nil
+		if secret == nil {
+			return fmt.Errorf("Unable to read %s: %#v", path, secret)
 		}
+
+		out.Keys[path] = secret.Data
+		debug("Successfully read data from key '%s'", path)
+		return nil
 	}
 
-	secret, err := client.Logical().Read(path)
+	secret, err := client.Logical().List(path)
 	if err != nil {
-		return err
+		return fmt.Errorf("Error reading %s: %s", path, err)
 	}
 
-	if secret == nil {
-		return fmt.Errorf("Unable to read %s: %#v", path, secret)
+	if secret != nil && secret.Data["keys"] != nil {
+		for _, k := range secret.Data["keys"].([]interface{}) {
+			if err := readRecurse(client, path+k.(string), out); err != nil {
+				return err
+			}
+		}
+		return nil
 	}
-
-	out.Keys[path] = secret.Data
-	debug("Successfully read data from key '%s'", path)
 
 	return nil
 }

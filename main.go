@@ -216,5 +216,6 @@ func parseImportFile(in []byte) (out []byte, err error) {
 	}
 
 	buf := bytes.NewBuffer([]byte{})
-	return buf.Bytes(), t.Execute(buf, nil)
+	err = t.Execute(buf, nil)
+	return buf.Bytes(), err
 }

@@ -139,21 +139,23 @@ func exportFromVault(client *api.Client) error {
 }
 
 func readRecurse(client *api.Client, path string, out *importFile) error {
-	secret, err := client.Logical().List(path)
-	if err != nil {
-		return fmt.Errorf("Error reading %s: %s", path, err)
-	}
-
-	if secret != nil && secret.Data["keys"] != nil {
-		for _, k := range secret.Data["keys"].([]interface{}) {
-			if err := readRecurse(client, path+k.(string), out); err != nil {
-				return err
-			}
+	if strings.HasSuffix(path, "/") {
+		secret, err := client.Logical().List(path)
+		if err != nil {
+			return fmt.Errorf("Error reading %s: %s", path, err)
 		}
-		return nil
+
+		if secret != nil && secret.Data["keys"] != nil {
+			for _, k := range secret.Data["keys"].([]interface{}) {
+				if err := readRecurse(client, path+k.(string), out); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
 	}
 
-	secret, err = client.Logical().Read(path)
+	secret, err := client.Logical().Read(path)
 	if err != nil {
 		return err
 	}

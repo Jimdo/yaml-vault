@@ -22,6 +22,7 @@ var (
 		Import         bool     `flag:"import" default:"false" description:"Enable importing data into Vault"`
 		Export         bool     `flag:"export" default:"false" description:"Enable exporting data from Vault"`
 		ExportPaths    []string `flag:"export-paths" default:"secret" description:"Which paths to export"`
+		IgnoreErrors   bool     `flag:"ignore-errors" default:"false" description:"Do not exit on read/write errors"`
 		VaultAddress   string   `flag:"vault-addr" env:"VAULT_ADDR" default:"https://127.0.0.1:8200" description:"Vault API address"`
 		VaultToken     string   `flag:"vault-token" env:"VAULT_TOKEN" vardefault:"vault-token" description:"Specify a token to use instead of app-id auth"`
 		VersionAndExit bool     `flag:"version" default:"false" description:"Print program version and exit"`
@@ -41,6 +42,10 @@ func debug(format string, v ...interface{}) {
 	if cfg.Verbose {
 		log.Printf(format, v...)
 	}
+}
+
+func info(format string, v ...interface{}) {
+	log.Printf(format, v...)
 }
 
 func vaultTokenFromDisk() string {
@@ -146,6 +151,10 @@ func readRecurse(client *api.Client, path string, out *importFile) error {
 		}
 
 		if secret == nil {
+			if cfg.IgnoreErrors {
+				info("Unable to read %s: %#v", path, secret)
+				return nil
+			}
 			return fmt.Errorf("Unable to read %s: %#v", path, secret)
 		}
 
@@ -156,6 +165,10 @@ func readRecurse(client *api.Client, path string, out *importFile) error {
 
 	secret, err := client.Logical().List(path)
 	if err != nil {
+		if cfg.IgnoreErrors {
+			info("Error reading %s: %s", path, err)
+			return nil
+		}
 		return fmt.Errorf("Error reading %s: %s", path, err)
 	}
 
@@ -189,6 +202,10 @@ func importToVault(client *api.Client) error {
 
 	for key, data := range keys.Keys {
 		if _, err := client.Logical().Write(key, data); err != nil {
+			if cfg.IgnoreErrors {
+				info("Error while writing data to key '%s': %s", key, err)
+				continue
+			}
 			return err
 		}
 		debug("Successfully wrote data to key '%s'", key)

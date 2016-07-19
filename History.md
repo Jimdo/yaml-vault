@@ -1,3 +1,7 @@
+# 0.3.0 / 2016-07-19
+
+  * allow ignoring errors (writing sys/auth/ path or similar)
+
 # 0.2.4 / 2016-07-11
 
   * fix read tries when path has no current children

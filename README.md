@@ -9,9 +9,10 @@
 ```bash
 # cat vault.yaml
 keys:
-  secret/integration/test:
-    bar: foo
-    foo: bar
+  - key: secret/integration/test
+    values:
+      bar: foo
+      foo: bar
 
 # yaml-vault --import -f vault.yaml
 

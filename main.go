@@ -33,7 +33,12 @@ var (
 )
 
 type importFile struct {
-	Keys map[string]map[string]interface{}
+	Keys []importField
+}
+
+type importField struct {
+	Key    string
+	Values map[string]interface{}
 }
 
 type execFunction func(*api.Client) error
@@ -117,9 +122,7 @@ func main() {
 }
 
 func exportFromVault(client *api.Client) error {
-	out := importFile{
-		Keys: make(map[string]map[string]interface{}),
-	}
+	out := importFile{}
 
 	for _, path := range cfg.ExportPaths {
 		if path[0] == '/' {
@@ -158,7 +161,7 @@ func readRecurse(client *api.Client, path string, out *importFile) error {
 			return fmt.Errorf("Unable to read %s: %#v", path, secret)
 		}
 
-		out.Keys[path] = secret.Data
+		out.Keys = append(out.Keys, importField{Key: path, Values: secret.Data})
 		debug("Successfully read data from key '%s'", path)
 		return nil
 	}
@@ -200,15 +203,15 @@ func importToVault(client *api.Client) error {
 		return err
 	}
 
-	for key, data := range keys.Keys {
-		if _, err := client.Logical().Write(key, data); err != nil {
+	for _, field := range keys.Keys {
+		if _, err := client.Logical().Write(field.Key, field.Values); err != nil {
 			if cfg.IgnoreErrors {
-				info("Error while writing data to key '%s': %s", key, err)
+				info("Error while writing data to key '%s': %s", field.Key, err)
 				continue
 			}
 			return err
 		}
-		debug("Successfully wrote data to key '%s'", key)
+		debug("Successfully wrote data to key '%s'", field.Key)
 	}
 
 	return nil

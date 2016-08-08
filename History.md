@@ -1,3 +1,8 @@
+# 1.0.0 / 2016-08-08
+
+  * Use a slice instead of a map  
+  This introduces a breaking change in the configuration format. Please review the README file for more information.
+
 # 0.3.0 / 2016-07-19
 
   * allow ignoring errors (writing sys/auth/ path or similar)

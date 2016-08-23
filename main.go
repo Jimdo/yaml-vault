@@ -3,11 +3,11 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"html/template"
 	"io/ioutil"
 	"log"
 	"os"
 	"strings"
+	"text/template"
 
 	"gopkg.in/yaml.v2"
 

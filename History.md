@@ -1,3 +1,7 @@
+# 1.0.1 / 2016-08-23
+
+  * Fix: Use text/template instead of html/template
+
 # 1.0.0 / 2016-08-08
 
   * Use a slice instead of a map  

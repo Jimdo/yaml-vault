@@ -1,3 +1,7 @@
+# 1.1.0 / 2016-10-05
+
+  * Add state absent to delete keys
+
 # 1.0.1 / 2016-08-23
 
   * Fix: Use text/template instead of html/template

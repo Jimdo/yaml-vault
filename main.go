@@ -38,6 +38,7 @@ type importFile struct {
 
 type importField struct {
 	Key    string
+	State  string
 	Values map[string]interface{}
 }
 
@@ -204,14 +205,24 @@ func importToVault(client *api.Client) error {
 	}
 
 	for _, field := range keys.Keys {
-		if _, err := client.Logical().Write(field.Key, field.Values); err != nil {
-			if cfg.IgnoreErrors {
-				info("Error while writing data to key '%s': %s", field.Key, err)
-				continue
+		if field.State == "absent" {
+			if _, err := client.Logical().Delete(field.Key); err != nil {
+				if cfg.IgnoreErrors {
+					info("Error while deleting key '%s': %s", field.Key, err)
+					continue
+				}
+				return err
 			}
-			return err
+		} else {
+			if _, err := client.Logical().Write(field.Key, field.Values); err != nil {
+				if cfg.IgnoreErrors {
+					info("Error while writing data to key '%s': %s", field.Key, err)
+					continue
+				}
+				return err
+			}
+			debug("Successfully wrote data to key '%s'", field.Key)
 		}
-		debug("Successfully wrote data to key '%s'", field.Key)
 	}
 
 	return nil

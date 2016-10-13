@@ -1,3 +1,7 @@
+# 1.1.1 / 2016-10-13
+
+  * Add Github releases publisher
+
 # 1.1.0 / 2016-10-05
 
   * Add state absent to delete keys

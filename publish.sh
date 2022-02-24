@@ -2,14 +2,9 @@
 
 VERSION=$(git describe --tags --exact-match)
 REPO=$(basename $(pwd))
-ARCHS="linux/386 linux/amd64 linux/arm darwin/amd64 darwin/386 windows/386 windows/amd64"
+ARCHS="linux/386 linux/amd64 linux/arm darwin/amd64 windows/386 windows/amd64"
 
 set -e
-
-if [ -z "${TRAVIS_TAG}" ]; then
-  echo "Not executing for non tag, but this is no failure."
-  exit 0
-fi
 
 if [ -z "${VERSION}" ]; then
 	echo "No tag present, stopping build now."
@@ -23,8 +18,8 @@ fi
 
 set -x
 
-go get github.com/aktau/github-release
-go get github.com/mitchellh/gox
+go install github.com/aktau/github-release@latest
+go install github.com/mitchellh/gox@latest
 
 github-release release --user Jimdo --repo ${REPO} --tag ${VERSION} --name ${VERSION} || true
 
